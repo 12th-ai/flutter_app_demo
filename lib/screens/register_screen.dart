@@ -1,104 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_screen.dart';
+import '../styles/style.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String _username = '';
-  String _email = '';
-  String _password = '';
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  String _message = '';
 
-  void _submit() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _register() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _message = 'Passwords do not match';
+      });
       return;
     }
-    _formKey.currentState!.save();
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', _username);
-    await prefs.setString('email', _email);
-    await prefs.setString('password', _password);
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Success'),
-        content: const Text('Registration successful!'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => const LoginScreen(),
-              ));
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    // Dummy registration for demonstration
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('username', _usernameController.text);
+    Navigator.pushReplacementNamed(context, '/dashboard');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Username'),
-                onSaved: (value) {
-                  _username = value!;
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a username.';
-                  }
-                  return null;
-                },
+      appBar: AppBar(title: const Text('Register')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                controller: _usernameController,
+                decoration: kTextFieldDecoration.copyWith(labelText: 'Username'),
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Email'),
-                onSaved: (value) {
-                  _email = value!;
-                },
-                validator: (value) {
-                  if (value!.isEmpty || !value.contains('@')) {
-                    return 'Please enter a valid email address.';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Password'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                decoration: kTextFieldDecoration.copyWith(labelText: 'Password'),
                 obscureText: true,
-                onSaved: (value) {
-                  _password = value!;
-                },
-                validator: (value) {
-                  if (value!.isEmpty || value.length < 6) {
-                    return 'Password must be at least 6 characters long.';
-                  }
-                  return null;
-                },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _confirmPasswordController,
+                decoration: kTextFieldDecoration.copyWith(labelText: 'Confirm Password'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _submit,
+                style: kButtonStyle,
+                onPressed: _register,
                 child: const Text('Register'),
+              ),
+              const SizedBox(height: 8),
+              Text(_message, style: const TextStyle(color: Colors.red)),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Already have an account? Login', style: kLinkStyle),
               ),
             ],
           ),

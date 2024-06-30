@@ -1,119 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dashboard_screen.dart';
+import '../styles/style.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String _username = '';
-  String _password = '';
-  bool _rememberMe = false;
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String _message = '';
 
-  void _submit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-    _formKey.currentState!.save();
-
+  Future<void> _login() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? storedPassword = prefs.getString('password');
-    if (storedPassword == _password) {
-      if (_rememberMe) {
-        await prefs.setBool('isLoggedIn', true);
-      }
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Success'),
-          content: const Text('Login successful!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (context) => const DashboardScreen(),
-                ));
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+    // Dummy check for demonstration
+    if (_usernameController.text == 'user' && _passwordController.text == 'pass') {
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('username', _usernameController.text);
+      Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Error'),
-          content: const Text('Invalid credentials!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+      setState(() {
+        _message = 'Invalid username or password';
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Username'),
-                onSaved: (value) {
-                  _username = value!;
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a username.';
-                  }
-                  return null;
-                },
+      appBar: AppBar(title: const Text('Login')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                controller: _usernameController,
+                decoration: kTextFieldDecoration.copyWith(labelText: 'Username'),
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Password'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                decoration: kTextFieldDecoration.copyWith(labelText: 'Password'),
                 obscureText: true,
-                onSaved: (value) {
-                  _password = value!;
-                },
-                validator: (value) {
-                  if (value!.isEmpty || value.length < 6) {
-                    return 'Password must be at least 6 characters long.';
-                  }
-                  return null;
-                },
               ),
-              CheckboxListTile(
-                title: const Text('Remember Me'),
-                value: _rememberMe,
-                onChanged: (newValue) {
-                  setState(() {
-                    _rememberMe = newValue!;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _submit,
+                style: kButtonStyle,
+                onPressed: _login,
                 child: const Text('Login'),
+              ),
+              const SizedBox(height: 8),
+              Text(_message, style: const TextStyle(color: Colors.red)),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/register');
+                },
+                child: const Text('Don\'t have an account? Register', style: kLinkStyle),
               ),
             ],
           ),
