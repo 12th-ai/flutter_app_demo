@@ -63,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: const Text('Don\'t have an account? Register', style: kLinkStyle),
               ),
             ],
-          ),
+          ), 
         ),
       ),
     );

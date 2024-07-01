@@ -18,7 +18,7 @@ class WelcomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.pushNamed(context, '/login');
             },
-            child: const Text('Join Us'),
+            child: const Text('Join me'),
           ),
         ),
       ),
